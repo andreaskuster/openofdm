@@ -61,7 +61,7 @@ expects one pair of I/Q sample every 5 clock ticks.
 
 Library Placement
 -----
-TODO
+The library itself needs to be placed in the `fpga/usrp3/lib/` folder within the [Ettus Research UHD](https://github.com/EttusResearch/uhd/) repo. The dot11 module instantiation can be found in [integration/DEVICE_NAME](integration)
 
 Makefile
 -----
