@@ -9,7 +9,7 @@ import math
 import os
 
 import numpy as np
-from wltrace import dot11
+import wltrace
 
 import commpy.channelcoding.convcode as cc
 
@@ -386,7 +386,7 @@ class HTSignal(object):
 
         self.mcs = int(self.mcs_bits[::-1], 2)
         try:
-            self.rate = dot11.mcs_to_rate(self.mcs)
+            self.rate = wltrace.dot11.mcs_to_rate(self.mcs)
         except:
             self.rate = 0
         self.length = int(self.len_bits[::-1], 2)
