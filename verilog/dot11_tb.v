@@ -88,7 +88,7 @@ integer byte_out_fd;
 `endif
 
 initial begin
-    $dumpfile("dot11.vcd");
+    $dumpfile("./sim_out/dot11.vcd");
     $dumpvars;
 
     $display("Reading memory from...");

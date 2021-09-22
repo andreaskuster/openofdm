@@ -23,6 +23,7 @@ def arg_parser():
     parser.add_argument('--stop', type=int, default=None,
                         help="Number samples to decode. By default it stops " \
                              "after the first packet.")
+    parser.add_argument('--gtkwave', action='store_true', help="Open simulation wave form with gtkwave")
     return parser
 
 
@@ -30,6 +31,9 @@ def test():
     args = arg_parser().parse_args()
 
     args.sample = os.path.abspath(args.sample)
+
+    # create folder if required
+    os.makedirs(SIM_OUT_DIR, exist_ok=True)
 
     with open(args.sample, 'rb') as f:
         samples = numpy.fromfile(f, dtype=scipy.int16)
@@ -67,9 +71,9 @@ def test():
                 '-DNUM_SAMPLE=%d ' \
                 '-c dot11_modules.list ' \
                 'dot11_tb.v ' \
-                '-o dot11.out' %
+                '-o sim_out/dot11.out' %
                 (memory_file, stop), cwd=VERILOG_DIR, shell=True)
-            subprocess.check_call('vvp -n dot11.out', cwd=VERILOG_DIR,
+            subprocess.check_call('vvp -n sim_out/dot11.out', cwd=VERILOG_DIR,
                                   shell=True)
         except KeyboardInterrupt:
             try:
@@ -211,6 +215,14 @@ def test():
 
     if not error:
         print("BYTE works!")
+
+    if args.gtkwave:
+        try:
+            vcd_file = os.path.join(SIM_OUT_DIR, "dot11.vcd")
+            print('gtkwave %s' % vcd_file)
+            subprocess.check_call('gtkwave %s' % vcd_file, shell=True)
+        except:
+            pass
 
 
 if __name__ == '__main__':
