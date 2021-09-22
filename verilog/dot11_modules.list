@@ -1,5 +1,5 @@
--y ./Xilinx/12.2/ISE_DS/ISE/verilog/src/unisims/
--y ./Xilinx/12.2/ISE_DS/ISE/verilog/src/XilinxCoreLib/
+-y ./Xilinx/14.7/ISE_DS/ISE/verilog/src/unisims/
+-y ./Xilinx/14.7/ISE_DS/ISE/verilog/src/XilinxCoreLib/
 
 dot11.v
 
@@ -30,9 +30,10 @@ ht_sig_crc.v
 rate_to_idx.v
 crc32.v
 
-./usrp2/setting_reg.v
-./usrp2/ram_2port.v
+./uhd/setting_reg.v
+./uhd/ram_2port.v
 
+# device specific IP blocks
 ./coregen/xfft_v7_1.v
 ./coregen/complex_multiplier.v
 ./coregen/viterbi_v7_0.v
@@ -41,4 +42,4 @@ crc32.v
 ./coregen/atan_lut.v
 ./coregen/rot_lut.v
 
-./Xilinx/12.2/ISE_DS/ISE/verilog/src/unisims/MULT18X18S.v
+./Xilinx/14.7/ISE_DS/ISE/verilog/src/unisims/MULT18X18S.v
