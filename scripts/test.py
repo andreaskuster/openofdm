@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import os
 import argparse
-import scipy
+import os
 import subprocess
+
+import scipy
 
 import decode
 
@@ -19,8 +20,8 @@ def arg_parser():
     parser.add_argument('--no_sim', action='store_true', default=False,
                         help="Skip simulation step.")
     parser.add_argument('--stop', type=int, default=None,
-                        help="Number samples to decode. By default it stops "\
-                        "after the first packet.")
+                        help="Number samples to decode. By default it stops " \
+                             "after the first packet.")
     return parser
 
 
@@ -32,28 +33,28 @@ def test():
     with open(args.sample, 'rb') as f:
         samples = scipy.fromfile(f, dtype=scipy.int16)
     samples = [complex(i, q) for i, q in zip(samples[::2], samples[1::2])]
-    print "Using file %s (%d samples)" % (args.sample, len(samples))
+    print("Using file %s (%d samples)" % (args.sample, len(samples)))
 
     memory_file = '%s.txt' % (os.path.splitext(args.sample)[0])
-    if not os.path.isfile(memory_file) or\
+    if not os.path.isfile(memory_file) or \
             os.path.getmtime(memory_file) < os.path.getmtime(args.sample):
-        subprocess.check_call('python %s/bin_to_mem.py %s --out %s' %\
+        subprocess.check_call('python3 %s/bin_to_mem.py %s --out %s' % \
                               (SCRIPT_DIR, args.sample, memory_file), shell=True)
 
-    print "Decoding..."
-    begin, expected_signal, cons, expected_demod_out,\
-        expected_deinterleave_out,\
-        expected_conv_out, expected_descramble_out, expected_byte_out, pkt =\
+    print("Decoding...")
+    begin, expected_signal, cons, expected_demod_out, \
+    expected_deinterleave_out, \
+    expected_conv_out, expected_descramble_out, expected_byte_out, pkt = \
         decode.Decoder(args.sample, skip=0).decode_next()
 
-    num_sample = int((expected_signal.length*8.0/expected_signal.rate +
-                      (40 if expected_signal.ht else 20))*20)
+    num_sample = int((expected_signal.length * 8.0 / expected_signal.rate +
+                      (40 if expected_signal.ht else 20)) * 20)
 
     if args.stop is None:
         stop = begin + num_sample + 320
     else:
         stop = min(args.stop, len(samples))
-    print "Stop after %d samples" % (stop)
+    print("Stop after %d samples" % (stop))
 
     if not args.no_sim:
         try:
@@ -63,11 +64,11 @@ def test():
 
         try:
             subprocess.check_call(
-                'iverilog -DDEBUG_PRINT '\
-                '-DSAMPLE_FILE="\\"%s\\"" '\
-                '-DNUM_SAMPLE=%d '\
-                '-c dot11_modules.list '\
-                'dot11_tb.v '\
+                'iverilog -DDEBUG_PRINT ' \
+                '-DSAMPLE_FILE="\\"%s\\"" ' \
+                '-DNUM_SAMPLE=%d ' \
+                '-c dot11_modules.list ' \
+                'dot11_tb.v ' \
                 '-o dot11.out' %
                 (memory_file, stop), cwd=VERILOG_DIR, shell=True)
             subprocess.check_call('vvp -n dot11.out', cwd=VERILOG_DIR,
@@ -93,18 +94,18 @@ def test():
     if not expected_signal.ht:
         signal_error = False
         for idx, attr in enumerate(['rate_bits', 'rsvd', 'len_bits',
-                                'parity_bits', 'tail_bits']):
+                                    'parity_bits', 'tail_bits']):
             if getattr(expected_signal, attr) == signal_out[idx]:
-                print "Signal.%s works" % (attr)
+                print("Signal.%s works" % (attr))
             else:
-                print "Wrong Signal.%s: expect %s, got %s" %\
-                    (attr, getattr(expected_signal, attr), signal_out[idx])
+                print("Wrong Signal.%s: expect %s, got %s" % \
+                      (attr, getattr(expected_signal, attr), signal_out[idx]))
                 signal_error = True
 
         if signal_error:
             return
         else:
-            print "== DECODE SIGNAL WORKS =="
+            print("== DECODE SIGNAL WORKS ==")
 
     if expected_signal.ht:
         n_bpsc, n_cbps, n_dbps = decode.HT_MCS_PARAMETERS[expected_signal.mcs]
@@ -115,8 +116,8 @@ def test():
     expected_demod_out = ''.join([str(b) for b in expected_demod_out])
     temp = []
     for i in range(0, len(expected_demod_out), n_cbps):
-        temp.extend(expected_demod_out[i+n_cbps/2:i+n_cbps])
-        temp.extend(expected_demod_out[i:i+n_cbps/2])
+        temp.extend(expected_demod_out[i + n_cbps // 2:i + n_cbps])
+        temp.extend(expected_demod_out[i:i + n_cbps // 2])
     expected_demod_out = ''.join(temp)
 
     expected_deinterleave_out = ''.join([str(b) for b in expected_deinterleave_out])
@@ -132,86 +133,87 @@ def test():
             demod_out.append(line.strip()[-n_bpsc:][::-1])
     demod_out = ''.join(demod_out)
 
-    num_symbol = min(len(demod_out)/n_cbps, len(expected_demod_out)/n_cbps)
-    print "%d OFDM symbols" % (num_symbol)
+    num_symbol = min(len(demod_out) // n_cbps, len(expected_demod_out) // n_cbps)
+    print("%d OFDM symbols" % (num_symbol))
 
-    print "Checking DEMOD.."
+    print("Checking DEMOD..")
     error = False
     for idx in range(num_symbol):
-        expected = expected_demod_out[idx*n_cbps:(idx+1)*n_cbps]
-        got = demod_out[idx*n_cbps:(idx+1)*n_cbps]
-        print "%10s: %s" % ("Expected", expected)
-        print "%10s: %s" % ("Got", got)
+        expected = expected_demod_out[idx * n_cbps:(idx + 1) * n_cbps]
+        got = demod_out[idx * n_cbps:(idx + 1) * n_cbps]
+        print("%10s: %s" % ("Expected", expected))
+        print("%10s: %s" % ("Got", got))
         if expected != got:
-            print "Demod error at SYM %d, diff: %d" %\
-                (idx, len([i for i in range(len(got)) if expected[i] != got[i]]))
+            print("Demod error at SYM %d, diff: %d" % \
+                  (idx, len([i for i in range(len(got)) if expected[i] != got[i]])))
             error = True
 
     if not error:
-        print "DEMOD works!"
+        print("DEMOD works!")
 
-    print "Checking DEINTER..."
+    print("Checking DEINTER...")
     error = False
     for idx in range(num_symbol):
-        expected = expected_deinterleave_out[idx*n_cbps:(idx+1)*n_cbps]
-        got = deinterleave_out[idx*n_cbps:(idx+1)*n_cbps]
-        print "%10s: %s" % ("Expected", expected)
-        print "%10s: %s" % ("Got", got)
+        expected = expected_deinterleave_out[idx * n_cbps:(idx + 1) * n_cbps]
+        got = deinterleave_out[idx * n_cbps:(idx + 1) * n_cbps]
+        print("%10s: %s" % ("Expected", expected))
+        print("%10s: %s" % ("Got", got))
         if expected != got:
-            print "Deinter error at SYM %d, diff: %d" %\
-                (idx, len([i for i in range(len(got)) if expected[i] != got[i]]))
+            print("Deinter error at SYM %d, diff: %d" % \
+                  (idx, len([i for i in range(len(got)) if expected[i] != got[i]])))
             error = True
 
     if not error:
-        print "DEINTER works!"
+        print("DEINTER works!")
 
-    print "Checking CONV..."
+    print("Checking CONV...")
     error = False
     for idx in range(num_symbol):
-        expected = expected_conv_out[idx*n_dbps:(idx+1)*n_dbps]
-        got = conv_out[idx*n_dbps:(idx+1)*n_dbps]
-        print "%10s: %s" % ("Expected", expected)
-        print "%10s: %s" % ("Got", got)
+        expected = expected_conv_out[idx * n_dbps:(idx + 1) * n_dbps]
+        got = conv_out[idx * n_dbps:(idx + 1) * n_dbps]
+        print("%10s: %s" % ("Expected", expected))
+        print("%10s: %s" % ("Got", got))
         if expected != got:
-            print "Convolutional decoder error at symbol %d (diff %d)" %\
-                (idx, len([i for i in range(len(got)) if expected[i] != got[i]]))
+            print("Convolutional decoder error at symbol %d (diff %d)" % \
+                  (idx, len([i for i in range(len(got)) if expected[i] != got[i]])))
             error = True
 
     if not error:
-        print "CONV works!"
+        print("CONV works!")
 
-    descramble_out = '0'*7 + descramble_out  # compensate for the first 7 bits
-    print "Checking DESCRAMBLE..."
+    descramble_out = '0' * 7 + descramble_out  # compensate for the first 7 bits
+    print("Checking DESCRAMBLE...")
     error = False
     for idx in range(num_symbol):
-        expected = expected_descramble_out[idx*n_dbps:(idx+1)*n_dbps]
-        got = descramble_out[idx*n_dbps:(idx+1)*n_dbps]
-        print "%10s: %s" % ("Expected", expected)
-        print "%10s: %s" % ("Got", got)
+        expected = expected_descramble_out[idx * n_dbps:(idx + 1) * n_dbps]
+        got = descramble_out[idx * n_dbps:(idx + 1) * n_dbps]
+        print("%10s: %s" % ("Expected", expected))
+        print("%10s: %s" % ("Got", got))
         if expected != got:
-            print "Descramble error at SYM %d, diff: %d" %\
-                (idx, len([i for i in range(len(got)) if expected[i] != got[i]]))
+            print("Descramble error at SYM %d, diff: %d" % \
+                  (idx, len([i for i in range(len(got)) if expected[i] != got[i]])))
             error = True
 
     if not error:
-        print "DESCRAMBLE works!"
+        print("DESCRAMBLE works!")
 
     with open('%s/byte_out.txt' % (SIM_OUT_DIR), 'r') as f:
         byte_out = [int(b, 16) for b in f.read().strip().split('\n')]
 
-    print "Checking BYTE..."
+    print("Checking BYTE...")
     error = False
     for idx in range(min(len(byte_out), len(expected_byte_out))):
         expected = expected_byte_out[idx]
         got = byte_out[idx]
-        print "[%d / %d] Expect: %02x, Got: %02x" %\
-            (idx+1, len(expected_byte_out), expected, got)
+        print("[%d / %d] Expect: %02x, Got: %02x" % \
+              (idx + 1, len(expected_byte_out), expected, got))
         if expected != got:
-            print "BYTE error"
+            print("BYTE error")
             error = True
 
     if not error:
-        print "BYTE works!"
+        print("BYTE works!")
+
 
 if __name__ == '__main__':
     test()

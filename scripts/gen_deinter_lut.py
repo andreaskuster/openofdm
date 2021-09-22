@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Generate 802.11a/g/n Deinterleave LUT.
@@ -9,8 +9,9 @@ Output compensate for pucntureing.
 
 import argparse
 import math
-import decode
 import os
+
+import decode
 
 """
 LUT ENTRY FORMAT
@@ -60,7 +61,6 @@ RATE_BITS = {
     48: '1000',
     54: '1100',
 }
-
 
 RATES = [
     # (rate, mcs, ht)
@@ -112,16 +112,16 @@ def do_rate(rate=6, mcs=0, ht=False):
     i = 0
     puncture = 0
     while i < len(seq):
-        addra = seq[i]/n_bpsc
-        bita = seq[i]%n_bpsc
-        if i+1 < len(seq):
-            addrb = seq[i+1]/n_bpsc
-            bitb = seq[i+1]%n_bpsc
+        addra = seq[i] // n_bpsc
+        bita = seq[i] % n_bpsc
+        if i + 1 < len(seq):
+            addrb = seq[i + 1] // n_bpsc
+            bitb = seq[i + 1] % n_bpsc
         else:
             addrb = 0
             bitb = 0
 
-        base = (addra<<14) + (addrb<<8) + (bita<<5) + (bitb<<2) + (1<<1)
+        base = (addra << 14) + (addrb << 8) + (bita << 5) + (bitb << 2) + (1 << 1)
 
         if erase == '1/2':
             mask = base
@@ -132,9 +132,9 @@ def do_rate(rate=6, mcs=0, ht=False):
                 data.append(mask)
                 puncture = 1
             else:
-                mask = (1<<20) + base
+                mask = (1 << 20) + base
                 data.append(mask)
-                mask = (1<<21) + base
+                mask = (1 << 21) + base
                 data.append(mask)
                 puncture = 0
         elif erase == '2/3':
@@ -143,7 +143,7 @@ def do_rate(rate=6, mcs=0, ht=False):
                 data.append(mask)
                 puncture = 1
             else:
-                mask = (1<<20) + base
+                mask = (1 << 20) + base
                 data.append(mask)
                 i -= 1
                 puncture = 0
@@ -153,28 +153,28 @@ def do_rate(rate=6, mcs=0, ht=False):
                 data.append(mask)
                 puncture = 1
             elif puncture == 1:
-                mask = (1<<20) + base
+                mask = (1 << 20) + base
                 data.append(mask)
-                mask = (1<<21) + base
+                mask = (1 << 21) + base
                 data.append(mask)
                 puncture = 2
             else:
-                mask = (1<<20) + base
+                mask = (1 << 20) + base
                 data.append(mask)
-                mask = (1<<21) + base
+                mask = (1 << 21) + base
                 data.append(mask)
                 puncture = 0
         i += 2
 
     # reset addra to NUM_SUBCARRIER/2
     if ht:
-        mask = (26<<14) + 1
+        mask = (26 << 14) + 1
     else:
-        mask = (24<<14) + 1
+        mask = (24 << 14) + 1
     data.append(mask)
 
     # sentinel
-    data.extend([0]*4)
+    data.extend([0] * 4)
 
     return data
 
@@ -189,37 +189,38 @@ def main():
 
     coe_out = '%s.coe' % (os.path.splitext(args.out)[0])
 
-    header = [0]*32
+    header = [0] * 32
     lut = []
     offset = 32
     for rate, mcs, ht in RATES:
         if ht:
-            idx = (1<<4) + mcs
+            idx = (1 << 4) + mcs
         else:
             idx = int(RATE_BITS[rate], 2)
         header[idx] = offset
-        print '[rate=%d, mcs=%d] -> %d' % (rate, mcs, offset)
+        print('[rate=%d, mcs=%d] -> %d' % (rate, mcs, offset))
 
         data = do_rate(rate=rate, mcs=mcs, ht=ht)
         offset += len(data)
         lut.extend(data)
 
-    total = int(2**math.ceil(math.log(offset, 2)))
-    print 'Total row: %d (round up to %d)' % (offset, total)
+    total = int(2 ** math.ceil(math.log(offset, 2)))
+    print('Total row: %d (round up to %d)' % (offset, total))
 
-    lut.extend([0]*(total-offset))
+    lut.extend([0] * (total - offset))
 
     with open(args.out, 'w') as f:
         for l in header + lut:
             f.write('{0:022b}\n'.format(l))
-    print "MIL file saved as %s" % (args.out)
+    print("MIL file saved as %s" % (args.out))
 
     with open(coe_out, 'w') as f:
         f.write('memory_initialization_radix=2;\n')
         f.write('memory_initialization_vector=\n')
-        f.write(',\n'.join(['{0:022b}'.format(l) for l in header+lut]))
+        f.write(',\n'.join(['{0:022b}'.format(l) for l in header + lut]))
         f.write(';')
-    print "COE file saved as %s" % (coe_out)
+    print("COE file saved as %s" % (coe_out))
+
 
 if __name__ == '__main__':
     main()
