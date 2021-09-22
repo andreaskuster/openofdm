@@ -39,14 +39,11 @@ def test():
     memory_file = '%s.txt' % (os.path.splitext(args.sample)[0])
     if not os.path.isfile(memory_file) or \
             os.path.getmtime(memory_file) < os.path.getmtime(args.sample):
-        subprocess.check_call('python3 %s/bin_to_mem.py %s --out %s' % \
-                              (SCRIPT_DIR, args.sample, memory_file), shell=True)
+        subprocess.check_call('python3 %s/bin_to_mem.py %s --out %s' % (SCRIPT_DIR, args.sample, memory_file), shell=True)
 
     print("Decoding...")
-    begin, expected_signal, cons, expected_demod_out, \
-    expected_deinterleave_out, \
-    expected_conv_out, expected_descramble_out, expected_byte_out, pkt = \
-        decode.Decoder(args.sample, skip=0).decode_next()
+    begin, expected_signal, cons, expected_demod_out, expected_deinterleave_out, expected_conv_out, \
+    expected_descramble_out, expected_byte_out, pkt = decode.Decoder(args.sample, skip=0).decode_next()
 
     num_sample = int((expected_signal.length * 8.0 / expected_signal.rate +
                       (40 if expected_signal.ht else 20)) * 20)
