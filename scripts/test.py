@@ -24,6 +24,7 @@ def arg_parser():
                         help="Number samples to decode. By default it stops " \
                              "after the first packet.")
     parser.add_argument('--gtkwave', action='store_true', help="Open simulation wave form with gtkwave")
+    parser.add_argument('--device_family', type=str, default="spartan6", choices=["spartan6", "spartan3a_dsp"])
     return parser
 
 
@@ -65,16 +66,17 @@ def test():
             pass
 
         try:
-            subprocess.check_call(
+            sim_cmd = \
                 'iverilog -DDEBUG_PRINT ' \
                 '-DSAMPLE_FILE="\\"%s\\"" ' \
                 '-DNUM_SAMPLE=%d ' \
                 '-c dot11_modules.list ' \
+                '-c %s ' \
                 'dot11_tb.v ' \
-                '-o sim_out/dot11.out' %
-                (memory_file, stop), cwd=VERILOG_DIR, shell=True)
-            subprocess.check_call('vvp -n sim_out/dot11.out', cwd=VERILOG_DIR,
-                                  shell=True)
+                '-o sim_out/dot11.out' % (memory_file, stop, "coregen/%s.list" % args.device_family)
+            print(sim_cmd)
+            subprocess.check_call(sim_cmd, cwd=VERILOG_DIR, shell=True)
+            subprocess.check_call('vvp -n sim_out/dot11.out', cwd=VERILOG_DIR, shell=True)
         except KeyboardInterrupt:
             try:
                 subprocess.check_call('pgrep -f "vvp" | xargs kill -9',
