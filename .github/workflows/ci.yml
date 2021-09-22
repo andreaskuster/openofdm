@@ -6,7 +6,9 @@ jobs:
     steps:
       - name: check out repository code
         uses: actions/checkout@v2
-      - name: install packages
+      - name: install host packages
         run: xargs sudo apt install < ubuntu_requirements.txt
+      - name: install python3 packages
+        - python3 -m pip install -r requirements.txt
       - name: run cross validation
         run: python3 scripts/test.py testing_inputs/samples.dat
