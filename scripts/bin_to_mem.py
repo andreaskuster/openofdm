@@ -7,22 +7,22 @@ file that can be read by Verilog's $readmemh.
 
 import argparse
 import os
-import time
 import sys
+import time
 
-
-CHUNK_SIZE = 2**20
+CHUNK_SIZE = 2 ** 20
 
 
 def le_bin_str_to_signed_short(b):
-    v = ord(b[1])*(1<<8) + ord(b[0])
-    if v > (1<<15):
-        v = v - (1<<16)
+    #v = ord(b[1]) * (1 << 8) + ord(b[0])
+    v = b[1] * (1 << 8) + b[0]
+    if v > (1 << 15):
+        v = v - (1 << 16)
     return v
 
 
 def signed_short_to_hex_str(n):
-    return format(n%(1<<16), '04x')
+    return format(n % (1 << 16), '04x')
 
 
 def main():
@@ -37,27 +37,26 @@ def main():
     if args.out is None:
         args.out = '%s.txt' % (os.path.splitext(args.file)[0])
 
-    begin = time.clock()
+    begin = time.time()
     byte_count = 0
     total_bytes = os.path.getsize(args.file)
     with open(args.file, 'rb') as input:
-        with open(args.out, 'wb', buffering=2**26) as output:
+        with open(args.out, 'wb', buffering=2 ** 26) as output:
             while True:
                 bytes = input.read(CHUNK_SIZE)
                 if len(bytes) == 0:
                     break
                 for i in range(0, len(bytes), 4):
-                    I = le_bin_str_to_signed_short(bytes[i:i+2])/args.scale
-                    Q = le_bin_str_to_signed_short(bytes[i+2:i+4])/args.scale
-                    output.write('%s%s\n' % (signed_short_to_hex_str(I),
-                                             signed_short_to_hex_str(Q)))
+                    I = le_bin_str_to_signed_short(bytes[i:i + 2]) // args.scale
+                    Q = le_bin_str_to_signed_short(bytes[i + 2:i + 4]) // args.scale
+                    output.write(('%s%s\n' % (signed_short_to_hex_str(I), signed_short_to_hex_str(Q))).encode('utf-8'))
                 byte_count += len(bytes)
-                elapsed = time.clock() - begin
+                elapsed = time.time() - begin
                 speed = byte_count / elapsed
-                eta = (total_bytes - byte_count)/speed
-                progress = '%d / %d B\tSpeed: %.1f B/s\t Elapsed: %d s\tETA: %d s' %\
-                    (byte_count>>20, total_bytes, speed, int(elapsed), int(eta))
-                sys.stdout.write('\r%s' % (progress))
+                eta = (total_bytes - byte_count) / speed
+                progress = '%d / %d B\tSpeed: %.1f B/s\t Elapsed: %d s\tETA: %d s' % \
+                           (byte_count >> 20, total_bytes, speed, int(elapsed), int(eta))
+                sys.stdout.write('\r%s' % progress)
                 sys.stdout.flush()
     sys.stdout.write('\n')
 
