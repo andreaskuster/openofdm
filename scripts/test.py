@@ -5,8 +5,9 @@ import os
 import subprocess
 
 import scipy
-
+import numpy
 import decode
+
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
@@ -31,7 +32,7 @@ def test():
     args.sample = os.path.abspath(args.sample)
 
     with open(args.sample, 'rb') as f:
-        samples = scipy.fromfile(f, dtype=scipy.int16)
+        samples = numpy.fromfile(f, dtype=scipy.int16)
     samples = [complex(i, q) for i, q in zip(samples[::2], samples[1::2])]
     print("Using file %s (%d samples)" % (args.sample, len(samples)))
 
