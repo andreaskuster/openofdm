@@ -7,6 +7,6 @@ jobs:
       - name: check out repository code
         uses: actions/checkout@v2
       - name: setup environment
-        run: ./setup_env.sh
+        run: source setup_env.sh
       - name: run cross validation
         run: python3 scripts/test.py testing_inputs/samples.dat
