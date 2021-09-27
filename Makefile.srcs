@@ -44,7 +44,6 @@ rate_to_idx.v \
 crc32.v \
 ))
 
-
 # Spartan-6 specific IP blocks
 OPENOFDM_SPARTAN6_SRCS = $(abspath $(addprefix $(BASE_DIR)/../lib/openofdm/verilog/coregen/Spartan6/, \
 complex_multiplier.v \
