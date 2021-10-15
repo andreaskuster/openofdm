@@ -82,5 +82,6 @@ Device Compatibility
 | B200 | Spartan-6 (untested) |
 | B200mini | Spartan-6 (untested) |
 | B205mini | Spartan-6 (untested) |
-| B210 | Spartan-6 |
-| N310 | in progress |
+| B210 | Spartan-6, tested |
+| N310 | device incompatible with most WiFi standards, due to the sampling rate (master clock is no exact multiple of 20MHz) |
+| X310 | porting in progress |
