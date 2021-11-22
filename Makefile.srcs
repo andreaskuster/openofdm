@@ -17,7 +17,9 @@
 ##################################################
 # OpenOFDM Sources
 ##################################################
-OPENOFDM_SRCS = $(abspath $(addprefix $(BASE_DIR)/../lib/openofdm/verilog/, \
+#OPENOFDM_SRCS = $(abspath $(addprefix $(BASE_DIR)/../lib/openofdm/verilog/, \
+
+OPENOFDM_SRCS = $(abspath $(addprefix $(OOT_FPGA_DIR)/rfnoc_block_reactive/openofdm/verilog/, \
 dot11.v \
 sync_short.v \
 power_trigger.v \
@@ -68,3 +70,17 @@ div_gen_v3_0.v \
 viterbi_v7_0.v \
 sample_sync_fifo.v \
 ))
+
+# Kintex7_DSP specific IP blocks
+#OPENOFDM_KINTEX7_SRCS = $(abspath $(addprefix $(BASE_DIR)/../lib/openofdm/verilog/coregen/Kintex7/, \
+
+OPENOFDM_KINTEX7_SRCS = $(abspath $(addprefix $(OOT_FPGA_DIR)/rfnoc_block_reactive/openofdm/verilog/coregen/Kintex7/, \
+xfft_v7_1.xci \
+rot_lut.xci \
+atan_lut.xci \
+deinter_lut.xci \
+div_gen_v3_0.xci \
+viterbi_v7_0.xci \
+sample_sync_fifo.xci \
+))
+#complex_multiplier.xci \
